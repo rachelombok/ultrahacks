@@ -8,20 +8,11 @@ import image_rec
 
 from requests.auth import AuthBase
 
-
-callback_uri = 'oob'
 auth = tweepy.OAuthHandler(config.api_key, config.api_secret_key)
-
-redirect_url = auth.get_authorization_url()
-webbrowser.open(redirect_url)
-user_pin_input = input("What is the pin? ")
-
-auth.get_access_token(user_pin_input)
+auth.set_access_token(config.access_token, config.access_token_secret)
 
 api = tweepy.API(auth)
 me = api.me()
-
-auth.consumer_key
 
 messages = api.list_direct_messages()
 
@@ -29,6 +20,7 @@ data = api.rate_limit_status()
 
 def check_picture(url):
     s = auth.oauth
+    s.max_redirects = 100
     data = s.get(url)
     with open('image.jpg', 'wb') as fobj:
         fobj.write(data.content)
@@ -51,8 +43,4 @@ for message in api.list_direct_messages():
         if check_picture(message.message_create['message_data']['attachment']['media']['media_url']):
             remove_message(message.id)
             
-    else:
-        for word in muted_words:
-            if word.lower() in str(message.message_create['message_data']['text']).lower():
-                remove_message(message.id)
 
